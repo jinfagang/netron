@@ -6,7 +6,7 @@
         "email": "lutzroeder@users.noreply.github.com",
         "url": "https://www.lutzroeder.com"
     },
-    "version": "5.8.1",
+    "version": "5.8.8",
     "description": "Visualizer for neural network, deep learning, and machine learning models",
     "license": "MIT",
     "repository": "lutzroeder/netron",
@@ -20,10 +20,10 @@
         "electron-updater": "5.0.1"
     },
     "devDependencies": {
-        "electron": "19.0.0",
+        "electron": "19.0.5",
         "electron-builder": "23.0.4",
         "electron-notarize": "1.2.1",
-        "eslint": "8.16.0"
+        "eslint": "8.18.0"
     },
     "eslintConfig": {
         "env": {
@@ -82,6 +82,7 @@
             { "ext": "caffemodel",  "name": "Caffe Model"              },
             { "ext": "ckpt",        "name": "Model Checkpoint"         },
             { "ext": "cmf",         "name": "CNTK Model"               },
+            { "ext": "dlc",         "name": "DLC Model"                },
             { "ext": "dnn",         "name": "CNTK Model"               },
             { "ext": "h5",          "name": "Keras Model"              },
             { "ext": "hd5",         "name": "Keras Model"              },
@@ -99,7 +100,7 @@
             { "ext": "nn",          "name": "Barracuda Model"          },
             { "ext": "nnp",         "name": "Neural Network Libraries" },
             { "ext": "om",          "name": "DaVinci OM Model"         },
-            { "ext": "onnx",        "name": "ONNX Model"            },
+            { "ext": "onnx",        "name": "ONNX Model"               },
             { "ext": "ort",         "name": "ONNX Runtime Model"       },
             { "ext": "paddle",      "name": "PaddlePaddle Model"       },
             { "ext": "param",       "name": "NCNN Model"               },

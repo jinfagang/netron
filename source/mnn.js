@@ -32,7 +32,7 @@ mnn.ModelFactory = class {
                 const message = error && error.message ? error.message : error.toString();
                 throw new mnn.Error('File format is not mnn.Net (' + message.replace(/\.$/, '') + ').');
             }
-            return mnn.Metadata.open(context).then((metadata) => {
+            return context.metadata('mnn-metadata.json').then((metadata) => {
                 return new mnn.Model(metadata, net);
             });
         });
@@ -42,15 +42,19 @@ mnn.ModelFactory = class {
 mnn.Model = class {
 
     constructor(metadata, net) {
-        const NetSource = mnn.schema.NetSource;
-        switch (net.sourceType) {
-            case NetSource.CAFFE: this._source = 'Caffe'; break;
-            case NetSource.TENSORFLOW: this._source = 'TensorFlow'; break;
-            case NetSource.TFLITE: this._source = 'TensorFlow Lite'; break;
-            case NetSource.ONNX: this._source = 'ONNX'; break;
-            case NetSource.TORCH: this._source = 'Torch'; break;
-            default: throw new mnn.Error("Unsupported model source '" + net.sourceType + "'.");
+        const sources = new Map([
+            [ mnn.schema.NetSource.CAFFE, 'Caffe' ],
+            [ mnn.schema.NetSource.TENSORFLOW, 'TensorFlow' ],
+            [ mnn.schema.NetSource.TFLITE, 'TensorFlow Lite' ],
+            [ mnn.schema.NetSource.ONNX, 'ONNX' ],
+            [ mnn.schema.NetSource.TORCH, 'Torch' ]
+        ]);
+        if (!sources.has(net.sourceType)) {
+            throw new mnn.Error("Unsupported model source '" + net.sourceType + "'.");
         }
+        this._metadata = [
+            { name: 'source', value: sources.get(net.sourceType) }
+        ];
         this._graphs = [ new mnn.Graph(metadata, net) ];
     }
 
@@ -58,8 +62,8 @@ mnn.Model = class {
         return 'MNN v2';
     }
 
-    get source() {
-        return this._source || '';
+    get metadata() {
+        return this._metadata;
     }
 
     get graphs() {
@@ -513,55 +517,6 @@ mnn.TensorShape = class {
             return '[' + this._dimensions.map((dimension) => dimension ? dimension.toString() : '?').join(',') + ']';
         }
         return '';
-    }
-};
-
-mnn.Metadata = class {
-
-    static open(context) {
-        if (mnn.Metadata._metadata) {
-            return Promise.resolve(mnn.Metadata._metadata);
-        }
-        return context.request('mnn-metadata.json', 'utf-8', null).then((data) => {
-            mnn.Metadata._metadata = new mnn.Metadata(data);
-            return mnn.Metadata._metadata;
-        }).catch(() => {
-            mnn.Metadata._metadata = new mnn.Metadata(null);
-            return mnn.Metadata._metadata;
-        });
-    }
-
-    constructor(data) {
-        this._map = new Map();
-        if (data) {
-            const metadata = JSON.parse(data);
-            this._map = new Map(metadata.map((item) => [ item.name, item ]));
-        }
-    }
-
-    type(name) {
-        return this._map.get(name);
-    }
-
-    attribute(type, name) {
-        const schema = this.type(type);
-        if (schema) {
-            let attributeMap = schema.attributeMap;
-            if (!attributeMap) {
-                attributeMap = {};
-                if (schema.attributes) {
-                    for (const attribute of schema.attributes) {
-                        attributeMap[attribute.name] = attribute;
-                    }
-                }
-                schema.attributeMap = attributeMap;
-            }
-            const attributeSchema = attributeMap[name];
-            if (attributeSchema) {
-                return attributeSchema;
-            }
-        }
-        return null;
     }
 };
 

@@ -287,7 +287,8 @@ onnx.Model = class {
         this._format = format;
         this._producer = model.producer_name && model.producer_name.length > 0 ? model.producer_name + (model.producer_version && model.producer_version.length > 0 ? ' ' + model.producer_version : '') : null;
         this._domain = model.domain;
-        this._modelVersion = model.model_version;
+        const model_version = typeof model.model_version === 'number' ? model.model_version : model.model_version.toNumber();
+        this._version = model_version ? model_version.toString() : '';
         this._description = model.doc_string;
         this._metadata = [];
         this._imports = null;
@@ -309,32 +310,44 @@ onnx.Model = class {
         }
 
         let imageFormat = '';
-        if (model.metadata_props) {
+        const metadata_props = model.metadata_props;
+        if (metadata_props) {
             const imageMetadata = {};
-            for (const metadata_prop of model.metadata_props) {
-                switch (metadata_prop.key) {
-                    case 'author':
-                        this._author = metadata_prop.value;
-                        break;
-                    case 'company':
-                        this._company = metadata_prop.value;
-                        break;
-                    case 'converted_from':
-                        this._converted_from = metadata_prop.value;
-                        break;
-                    case 'license':
-                        this._license = metadata_prop.value;
-                        break;
-                    case 'license_url':
-                        this._licenseUrl = metadata_prop.value;
-                        break;
+            const metadata = new Map(metadata_props.map((entry) => [ entry.key, entry.value ]));
+            const converted_from = metadata.get('converted_from');
+            if (converted_from) {
+                this._metadata.push({ name: 'source', value: converted_from });
+            }
+            const author = metadata.get('author');
+            if (author) {
+                this._metadata.push({ name: 'author', value: author });
+            }
+            const company = metadata.get('company');
+            if (company) {
+                this._metadata.push({ name: 'company', value: company });
+            }
+            let license = metadata.get('license');
+            const license_url = metadata.get('license_url');
+            if (license_url) {
+                license = '<a href=\'' + license_url + '\'>' + (license ? license : license_url) + '</a>';
+            }
+            if (license) {
+                this._metadata.push({ name: 'license', value: license });
+            }
+            metadata.delete('author');
+            metadata.delete('company');
+            metadata.delete('converted_from');
+            metadata.delete('license');
+            metadata.delete('license_url');
+            for (const entry of metadata) {
+                switch (entry[0]) {
                     case 'Image.BitmapPixelFormat':
                     case 'Image.ColorSpaceGamma':
                     case 'Image.NominalPixelRange':
-                        imageMetadata[metadata_prop.key] = metadata_prop.value;
+                        imageMetadata[entry[0]] = entry[1];
                         break;
                     default:
-                        this._metadata.push({ name: metadata_prop.key, value: metadata_prop.value});
+                        this._metadata.push({ name: entry[0], value: entry[1] });
                         break;
                 }
             }
@@ -369,6 +382,10 @@ onnx.Model = class {
         return this._format;
     }
 
+    get version() {
+        return this._version;
+    }
+
     get imports() {
         return this._imports;
     }
@@ -383,32 +400,6 @@ onnx.Model = class {
 
     get description() {
         return this._description || null;
-    }
-
-    get author() {
-        return this._author || null;
-    }
-
-    get company() {
-        return this._company || null;
-    }
-
-    get source() {
-        return this._converted_from || null;
-    }
-
-    get license() {
-        const license = [];
-        if (this._license && this._license.length > 0) {
-            license.push(this._license);
-        }
-        if (this._licenseUrl && this._licenseUrl.length > 0) {
-            license.push('<a href=\'' + this._licenseUrl + '\'>' + this._licenseUrl + '</a>');
-        }
-        if (license.length > 0) {
-            return license;
-        }
-        return null;
     }
 
     get metadata() {

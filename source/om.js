@@ -27,7 +27,7 @@ om.ModelFactory = class {
                 const message = error && error.message ? error.message : error.toString();
                 throw new om.Error('File format is not ge.proto.ModelDef (' + message.replace(/\.$/, '') + ').');
             }
-            return om.Metadata.open(context).then((metadata) => {
+            return context.metadata('om-metadata.json').then((metadata) => {
                 return new om.Model(metadata, model, file.weights);
             });
         });
@@ -578,60 +578,15 @@ om.Utility = class {
             'complex64', 'complex128', 'qint8', 'qint16', 'qint32', 'quint8', 'quint16', 'resource',
             'stringref', 'dual', 'variant', 'bfloat16', 'int4', 'uint1', 'int2', 'uint2'
         ];
-        if (value < om.Utility._types.length) {
-            return om.Utility._types[value];
+        if (value >= om.Utility._types.length) {
+            throw new om.Error("Unsupported dtype '" + value + "'.");
         }
-        throw new om.Error("Unsupported dtype '" + value + "'.");
+        return om.Utility._types[value];
     }
 
     static decodeText(value) {
         om.Utility._textDecoder = om.Utility._textDecoder || new TextDecoder('utf-8');
         return om.Utility._textDecoder.decode(value);
-    }
-};
-
-om.Metadata = class {
-
-    static open(context) {
-        if (om.Metadata._metadata) {
-            return Promise.resolve(om.Metadata._metadata);
-        }
-        return context.request('om-metadata.json', 'utf-8', null).then((data) => {
-            om.Metadata._metadata = new om.Metadata(data);
-            return om.Metadata._metadata;
-        }).catch(() => {
-            om.Metadata._metadata = new om.Metadata(null);
-            return om.Metadata._metadata;
-        });
-    }
-
-    constructor(data) {
-        this._map = new Map();
-        this._attributes = new Map();
-        if (data) {
-            const metadata = JSON.parse(data);
-            this._map = new Map(metadata.map((item) => [ item.name, item ]));
-        }
-    }
-
-    type(name) {
-        return this._map.get(name);
-    }
-
-    attribute(type, name) {
-        const key = type + ':' + name;
-        if (!this._attributes.has(key)) {
-            const schema = this.type(type);
-            if (schema && schema.attributes && schema.attributes.length > 0) {
-                for (const attribute of schema.attributes) {
-                    this._attributes.set(type + ':' + attribute.name, attribute);
-                }
-            }
-            if (!this._attributes.has(key)) {
-                this._attributes.set(key, null);
-            }
-        }
-        return this._attributes.get(key);
     }
 };
 

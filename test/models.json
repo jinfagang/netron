@@ -50,6 +50,13 @@
   },
   {
     "type":     "_",
+    "target":   "keras2onnx.onnx",
+    "source":   "https://github.com/lutzroeder/netron/files/5738366/keras2onnx.onnx.zip[keras2onnx.onnx]",
+    "error":    "File format is not onnx.ModelProto (Unexpected end of file) in 'keras2onnx.onnx'.",
+    "link":     "https://github.com/lutzroeder/netron/issues/6"
+  },
+  {
+    "type":     "_",
     "target":   "knift_index.pb",
     "error":    "Invalid file content. File contains mediapipe.BoxDetectorIndex data.",
     "source":   "https://github.com/lutzroeder/netron/files/6308301/knift_index.pb.zip[knift_index.pb]"
@@ -894,6 +901,22 @@
     "link":     "https://github.com/caffe2/models"
   },
   {
+    "type":     "cambricon",
+    "target":   "deepsort_4c4b_bgr_270_v140.cambricon",
+    "source":   "https://github.com/lutzroeder/netron/files/8783170/deepsort_4c4b_bgr_270_v140.cambricon.zip[deepsort_4c4b_bgr_270_v140.cambricon]",
+    "format":   "Cambricon",
+    "error":    "File contains undocumented Cambricon data in 'deepsort_4c4b_bgr_270_v140.cambricon'.",
+    "link":     "https://github.com/lutzroeder/netron/issues/917"
+  },
+  {
+    "type":     "cambricon",
+    "target":   "SR_face_x3_530x530.cambricon",
+    "source":   "https://github.com/lutzroeder/netron/files/8783172/SR_face_x3_530x530.cambricon.zip[SR_face_x3_530x530.cambricon]",
+    "format":   "Cambricon",
+    "error":    "File contains undocumented Cambricon data in 'SR_face_x3_530x530.cambricon'.",
+    "link":     "https://github.com/lutzroeder/netron/issues/917"
+  },
+  {
     "type":     "circle",
     "target":   "ArgMax_001.circle",
     "source":   "https://github.com/lutzroeder/netron/files/7489768/circle_model_samples.zip[ArgMax_001.circle]",
@@ -1364,12 +1387,6 @@
   },
   {
     "type":     "coreml",
-    "target":   "HED_fuse.mlmodel",
-    "source":   "https://raw.githubusercontent.com/s1ddok/HED-CoreML/master/HED-CoreML/Models/HED_fuse.mlmodel",
-    "link":     "https://github.com/s1ddok/HED-CoreML"
-  },
-  {
-    "type":     "coreml",
     "target":   "imdb_lstm.mlmodel",
     "source":   "https://github.com/lutzroeder/netron/files/2591614/imdb_lstm.mlmodel.zip[imdb_lstm.mlmodel]",
     "format":   "Core ML v1",
@@ -1492,11 +1509,6 @@
     "source":   "https://raw.githubusercontent.com/CapTechMobile/blogfest-coreml/d8e8c15d33e9591c9e81cb18e5ea4b2fb6972503/ReadTheRoom/ReadTheRoom.mlmodel",
     "format":   "Core ML v4",
     "link":     "https://github.com/CapTechMobile/blogfest-coreml"
-  },
-  {
-    "type":     "coreml",
-    "target":   "Resnet50.mlmodel",
-    "source":   "https://docs-assets.developer.apple.com/coreml/models/Resnet50.mlmodel"
   },
   {
     "type":     "coreml",
@@ -1935,35 +1947,36 @@
     "type":     "dlc",
     "target":   "dmonitoring_model_q/model,dmonitoring_model_q/model.params",
     "source":   "https://github.com/lutzroeder/netron/files/8767267/dmonitoring_model_q.zip[model,model.params]",
-    "error":    "File contains undocumented 'NETD' data in 'model'.",
+    "format":   "DLC",
     "link":     "https://github.com/lutzroeder/netron/issues/640"
   },
   {
     "type":     "dlc",
     "target":   "dmonitoring_model_q.dlc",
     "source":   "https://github.com/lutzroeder/netron/files/8767255/dmonitoring_model_q.dlc.zip[dmonitoring_model_q.dlc]",
-    "error":    "File contains undocumented 'NETD' data in 'dmonitoring_model_q.dlc'.",
+    "format":   "DLC",
     "link":     "https://github.com/lutzroeder/netron/issues/640"
   },
   {
     "type":     "dlc",
     "target":   "inception_v3_quantized.dlc",
     "source":   "https://github.com/lutzroeder/netron/files/5615377/inception_v3_quantized.dlc.zip[inception_v3_quantized.dlc]",
-    "error":    "File contains undocumented 'NETD' data in 'inception_v3_quantized.dlc'.",
+    "format":   "DLC",
     "link":     "https://github.com/lutzroeder/netron/issues/640"
   },
   {
     "type":     "dlc",
     "target":   "model_front_mibokeh_video.dlc",
     "source":   "https://github.com/lutzroeder/netron/files/8767521/model_front_mibokeh_video.dlc.zip[model_front_mibokeh_video.dlc]",
-    "error":    "File contains undocumented 'NETD' data in 'model_front_mibokeh_video.dlc'.",
+    "format":   "DLC",
+    "error":    "File format is not dlc.NetParam (Offset is outside the bounds of the DataView) in 'model_front_mibokeh_video.dlc'.",
     "link":     "https://github.com/lutzroeder/netron/issues/640"
   },
   {
     "type":     "dlc",
     "target":   "mobile_mosaic_hta/model.params",
     "source":   "https://github.com/lutzroeder/netron/files/8767531/mobile_mosaic_hta.zip[model.params]",
-    "error":    "File contains undocumented 'NETP' data in 'model.params'.",
+    "format":   "DLC Weights",
     "link":     "https://github.com/lutzroeder/netron/issues/640"
   },
   {
@@ -3440,13 +3453,6 @@
   },
   {
     "type":     "onnx",
-    "target":   "keras2onnx.onnx",
-    "source":   "https://github.com/lutzroeder/netron/files/5738366/keras2onnx.onnx.zip[keras2onnx.onnx]",
-    "error":    "File format is not onnx.ModelProto (Unexpected end of file) in 'keras2onnx.onnx'.",
-    "link":     "https://github.com/lutzroeder/netron/issues/6"
-  },
-  {
-    "type":     "onnx",
     "target":   "Kmeans.onnx",
     "source":   "https://github.com/lutzroeder/netron/files/2592495/Kmeans.onnx.zip[Kmeans.onnx]",
     "format":   "ONNX v3",
@@ -3740,8 +3746,8 @@
 
   {
     "type":     "onnx",
-    "target":   "yolov3.onnx",
-    "source":   "https://github.com/lutzroeder/netron/files/5581031/yolov3.onnx.zip[yolov3.onnx]",
+    "target":   "yolov3.onnx.zip",
+    "source":   "https://github.com/lutzroeder/netron/files/8942116/yolov3.onnx.zip",
     "format":   "ONNX v5",
     "producer": "keras2onnx 1.5.1",
     "link":     "https://github.com/lutzroeder/netron/issues/6"
@@ -4294,6 +4300,13 @@
   },
   {
     "type":     "paddle",
+    "target":   "adam.pdopt",
+    "source":   "https://github.com/lutzroeder/netron/files/8882900/adam.pdopt.zip[adam.pdopt]",
+    "format":   "PaddlePaddle Pickle",
+    "link":     "https://github.com/lutzroeder/netron/issues/552"
+  },
+  {
+    "type":     "paddle",
     "target":   "assign.pbtxt",
     "source":   "https://github.com/lutzroeder/netron/files/5485296/assign.pbtxt.zip[assign.pbtxt]",
     "format":   "PaddlePaddle",
@@ -4317,6 +4330,20 @@
     "type":     "paddle",
     "target":   "critic.pdparams",
     "source":   "https://github.com/lutzroeder/netron/files/8748332/critic.pdparams.zip[critic.pdparams]",
+    "format":   "PaddlePaddle Pickle",
+    "link":     "https://github.com/lutzroeder/netron/issues/552"
+  },
+  {
+    "type":     "paddle",
+    "target":   "EDVR_M_wo_tsa_SRx4.pdparams",
+    "source":   "https://github.com/lutzroeder/netron/files/8882904/EDVR_M_wo_tsa_SRx4.pdparams.zip[EDVR_M_wo_tsa_SRx4.pdparams]",
+    "format":   "PaddlePaddle Pickle",
+    "link":     "https://github.com/lutzroeder/netron/issues/552"
+  },
+  {
+    "type":     "paddle",
+    "target":   "emb.pdparams",
+    "source":   "https://github.com/lutzroeder/netron/files/8882903/emb.pdparams.zip[emb.pdparams]",
     "format":   "PaddlePaddle Pickle",
     "link":     "https://github.com/lutzroeder/netron/issues/552"
   },
@@ -4873,6 +4900,13 @@
   },
   {
     "type":     "pytorch",
+    "target":   "netron_issue_920.pt",
+    "source":   "https://github.com/lutzroeder/netron/files/8857486/netron_issue_920.pt.zip[netron_issue_920.pt]",
+    "format":   "TorchScript v1.6",
+    "link":     "https://github.com/lutzroeder/netron/issues/637"
+  },
+  {
+    "type":     "pytorch",
     "target":   "opt_xx.pt",
     "source":   "https://github.com/lutzroeder/netron/files/8747908/opt_xx.pt.zip[opt_xx.pt]",
     "format":   "TorchScript v1.6",
@@ -5303,6 +5337,13 @@
   },
   {
     "type":     "pytorch",
+    "target":   "WAV2VEC2_BASE_quant-none-cpu.pt",
+    "source":   "https://github.com/lutzroeder/netron/files/8820082/WAV2VEC2_BASE_quant-none-cpu.pt.zip[WAV2VEC2_BASE_quant-none-cpu.pt]",
+    "format":   "TorchScript v1.6",
+    "link":     "https://github.com/lutzroeder/netron/issues/918"
+  },
+  {
+    "type":     "pytorch",
     "target":   "yolov5n.torchscript",
     "source":   "https://github.com/lutzroeder/netron/files/8457287/yolov5n.torchscript.zip[yolov5n.torchscript]",
     "format":   "TorchScript v1.6",
@@ -5325,6 +5366,27 @@
   },
   {
     "type":     "rknn",
+    "target":   "blazeface.rknn",
+    "source":   "https://github.com/lutzroeder/netron/files/8932892/blazeface.rknn.zip[blazeface.rknn]",
+    "format":   "RKNN v1.7.0",
+    "link":     "https://github.com/lutzroeder/netron/issues/639"
+  },
+  {
+    "type":     "rknn",
+    "target":   "ckpt_precompile_20.nb",
+    "source":   "https://github.com/lutzroeder/netron/files/8932893/ckpt_precompile_20.nb.zip[ckpt_precompile_20.nb]",
+    "format":   "RKNN OpenVX",
+    "link":     "https://github.com/lutzroeder/netron/issues/639"
+  },
+  {
+    "type":     "rknn",
+    "target":   "det_monitor.nb",
+    "source":   "https://github.com/lutzroeder/netron/files/8886768/det_monitor.nb.zip[det_monitor.nb]",
+    "format":   "RKNN OpenVX",
+    "link":     "https://github.com/lutzroeder/netron/issues/639"
+  },
+  {
+    "type":     "rknn",
     "target":   "deepfusion.rknn",
     "source":   "https://github.com/lutzroeder/netron/files/5621075/deepfusion.rknn.zip[deepfusion.rknn]",
     "format":   "RKNN v1.2.1",
@@ -5339,9 +5401,44 @@
   },
   {
     "type":     "rknn",
+    "target":   "mobilenet_v1.rknn",
+    "source":   "https://github.com/lutzroeder/netron/files/8886811/mobilenet_v1.rknn.zip[mobilenet_v1.rknn]",
+    "format":   "RKNN Lite v1.2.6",
+    "link":     "https://github.com/lutzroeder/netron/issues/639"
+  },
+  {
+    "type":     "rknn",
+    "target":   "mobilenetv2.rknn",
+    "source":   "https://github.com/lutzroeder/netron/files/8886972/mobilenetv2.rknn.zip[mobilenetv2.rknn]",
+    "format":   "RKNN v1.2.0",
+    "link":     "https://github.com/lutzroeder/netron/issues/639"
+  },
+  {
+    "type":     "rknn",
+    "target":   "resize_area.rknn",
+    "source":   "https://github.com/lutzroeder/netron/files/8886403/resize_area.rknn.zip[resize_area.rknn]",
+    "format":   "RKNN v1.3.0",
+    "link":     "https://github.com/lutzroeder/netron/issues/639"
+  },
+  {
+    "type":     "rknn",
     "target":   "resnet_18.rknn",
     "source":   "https://github.com/lutzroeder/netron/files/5621078/resnet_18.rknn.zip[resnet_18.rknn]",
     "format":   "RKNN v1.3.2",
+    "link":     "https://github.com/lutzroeder/netron/issues/639"
+  },
+  {
+    "type":     "rknn",
+    "target":   "ssd_inception_v2.rknn",
+    "source":   "https://raw.githubusercontent.com/radxa/rknpu2/00f555433f07936dde0e4442f65bc46354934130/examples/rknn_ssd_demo/model/RK356X/ssd_inception_v2.rknn",
+    "format":   "RKNN v1.0.0",
+    "link":     "https://github.com/radxa/rknpu2/tree/00f555433f07936dde0e4442f65bc46354934130/examples/rknn_ssd_demo/model/RK356X"
+  },
+  {
+    "type":     "rknn",
+    "target":   "yolov5s-640-640.rknn",
+    "source":   "https://github.com/lutzroeder/netron/files/8886404/yolov5s-640-640.rknn.zip[yolov5s-640-640.rknn]",
+    "format":   "RKNN v1.2.5",
     "link":     "https://github.com/lutzroeder/netron/issues/639"
   },
   {

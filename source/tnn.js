@@ -37,7 +37,7 @@ tnn.ModelFactory = class {
     }
 
     open(context, match) {
-        return tnn.Metadata.open(context).then((metadata) => {
+        return context.metadata('tnn-metadata.json').then((metadata) => {
             switch (match) {
                 case 'tnn.model': {
                     const tnnmodel = context.identifier.substring(0, context.identifier.length - 9) + '.tnnmodel';
@@ -168,12 +168,7 @@ tnn.Node = class {
         this._outputs = [];
         this._attributes = [];
         this._name = layer.name;
-        let type = layer.type;
-        const operator = metadata.operator(type);
-        if (operator) {
-            type = operator;
-        }
-        this._type = metadata.type(type) || { name: type };
+        this._type = metadata.type(layer.type);
         const attributeSchemas = this._type && this._type.attributes ? this._type && this._type.attributes.slice() : [];
         const attributes = layer.attributes.slice();
         while (attributes.length > 0) {
@@ -233,7 +228,7 @@ tnn.Node = class {
                 return new tnn.Parameter(outputName, [ new tnn.Argument(output, null, null) ]);
             }));
         }
-        switch (type) {
+        switch (this._type.name) {
             case 'Convolution':
             case 'ConvolutionDepthWise':
             case 'Deconvolution':
@@ -498,6 +493,7 @@ tnn.Tensor = class {
         }
 
         switch (this._type.dataType) {
+            case 'int32':
             case 'float16':
             case 'float32':
                 context.data = new DataView(this._data.buffer, this._data.byteOffset, this._data.byteLength);
@@ -523,6 +519,11 @@ tnn.Tensor = class {
                     return results;
                 }
                 switch (this._type.dataType) {
+                    case 'int32':
+                        results.push(context.data.getInt32(context.index, true));
+                        context.index += 4;
+                        context.count++;
+                        break;
                     case 'float32':
                         results.push(context.data.getFloat32(context.index, true));
                         context.index += 4;
@@ -586,57 +587,6 @@ tnn.TensorShape = class {
 
     toString() {
         return this._dimensions ? ('[' + this._dimensions.map((dimension) => dimension ? dimension.toString() : '?').join(',') + ']') : '';
-    }
-};
-
-tnn.Metadata = class {
-
-    static open(context) {
-        if (tnn.Metadata._metadata) {
-            return Promise.resolve(tnn.Metadata._metadata);
-        }
-        return context.request('tnn-metadata.json', 'utf-8', null).then((data) => {
-            tnn.Metadata._metadata = new tnn.Metadata(data);
-            return tnn.Metadata._metadata;
-        }).catch(() => {
-            tnn.Metadata._metadata = new tnn.Metadata(null);
-            return tnn.Metadata._metadatas;
-        });
-    }
-
-    constructor(data) {
-        this._operatorMap = new Map();
-        this._map = new Map();
-        this._attributeCache = new Map();
-        if (data) {
-            const metadata = JSON.parse(data);
-            this._map = new Map(metadata.map((item) => [ item.name, item ]));
-            this._operatorMap = new Map(metadata.map((item) => [ item.operator, item ]));
-        }
-    }
-
-    operator(code) {
-        return this._operatorMap.get(code);
-    }
-
-    type(operator) {
-        return this._map.get(operator);
-    }
-
-    attribute(operator, name) {
-        const key = operator + ':' + name;
-        if (!this._attributeCache.has(key)) {
-            const schema = this.type(operator);
-            if (schema && schema.attributes && schema.attributes.length > 0) {
-                for (const attribute of schema.attributes) {
-                    this._attributeCache.set(operator + ':' + attribute.name, attribute);
-                }
-            }
-            if (!this._attributeCache.has(key)) {
-                this._attributeCache.set(key, null);
-            }
-        }
-        return this._attributeCache.get(key);
     }
 };
 
@@ -747,7 +697,7 @@ tnn.LayerResourceReader = class {
             if (magic_number !== 0xFABC0002 && magic_number !== 0xFABC0004) {
                 throw new tnn.Error("Invalid blob header signature '" + magic_number.toString() + "'.");
             }
-            const layerCount = reader.int32() & 0x1FFFFFFF;
+            this._layerResources = new Array(reader.int32() & 0x1FFFFFFF);
             const raw = (reader) => {
                 const magic_number = reader.uint32();
                 if (magic_number !== 0xFABC0002 && magic_number !== 0xFABC0004) {
@@ -779,7 +729,7 @@ tnn.LayerResourceReader = class {
                     throw new tnn.Error("Invalid string '" + content + "' instead of '" + name + "'.");
                 }
             };
-            for (let i = 0; i < layerCount; i++) {
+            for (let i = 0; i < this._layerResources.length; i++) {
                 const resource = {};
                 resource.operator = reader.int32();
                 resource.type = reader.string();
@@ -860,10 +810,11 @@ tnn.LayerResourceReader = class {
                         }
                         break;
                     }
-                    default:
+                    default: {
                         throw new tnn.Error("Unsupported layer resource type '" + resource.type + "'.");
+                    }
                 }
-                this._layerResources.push(resource);
+                this._layerResources[i] = resource;
             }
             if (reader.position !== reader.length) {
                 throw new tnn.Error("Invalid blob size.");

@@ -644,6 +644,12 @@ base.BinaryReader = class {
         }
     }
 
+    align(mod) {
+        if (this._position % mod != 0) {
+            this.skip(mod - (this._position % mod));
+        }
+    }
+
     read(length) {
         if (this._position === 0 && length === undefined) {
             this._position = this._length;
@@ -722,6 +728,64 @@ base.BinaryReader = class {
         this._decoder = this._decoder || new TextDecoder('utf-8');
         return this._decoder.decode(data);
     }
+
+    boolean() {
+        return this.byte() !== 0 ? true : false;
+    }
+};
+
+base.Metadata = class {
+
+    static open(context, name) {
+        base.Metadata._metadata = base.Metadata._metadata || new Map();
+        if (base.Metadata._metadata.has(name)) {
+            return Promise.resolve(base.Metadata._metadata.get(name));
+        }
+        return context.request(name, 'utf-8', null).then((data) => {
+            const library = new base.Metadata(data);
+            base.Metadata._metadata.set(name, library);
+            return library;
+        }).catch(() => {
+            const library = new base.Metadata(null);
+            base.Metadata._metadata.set(name, library);
+            return library;
+        });
+    }
+
+    constructor(data) {
+        this._types = new Map();
+        this._attributes = new Map();
+        if (data) {
+            const metadata = JSON.parse(data);
+            for (const entry of metadata) {
+                this._types.set(entry.name, entry);
+                if (entry.identifier !== undefined) {
+                    this._types.set(entry.identifier, entry);
+                }
+            }
+        }
+    }
+
+    type(name) {
+        if (!this._types.has(name)) {
+            this._types.set(name, { name: name.toString() });
+        }
+        return this._types.get(name);
+    }
+
+    attribute(type, name) {
+        const key = type + ':' + name;
+        if (!this._attributes.has(key)) {
+            this._attributes.set(key, null);
+            const metadata = this.type(type);
+            if (metadata && Array.isArray(metadata.attributes)) {
+                for (const attribute of metadata.attributes) {
+                    this._attributes.set(type + ':' + attribute.name, attribute);
+                }
+            }
+        }
+        return this._attributes.get(key);
+    }
 };
 
 if (typeof window !== 'undefined' && typeof window.Long != 'undefined') {
@@ -734,4 +798,5 @@ if (typeof module !== 'undefined' && typeof module.exports === 'object') {
     module.exports.Int64 = base.Int64;
     module.exports.Uint64 = base.Uint64;
     module.exports.BinaryReader = base.BinaryReader;
+    module.exports.Metadata = base.Metadata;
 }
