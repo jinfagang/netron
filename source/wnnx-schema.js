@@ -205,9 +205,10 @@ $root.wnn.OpType = {
     expand_dims: 64,
     normalize: 65,
     permute: 66,
-    unsupported: 67,
-    film_lpn: 68,
-    cubic: 69
+    channelshuffel: 67,
+    unsupported: 68,
+    film_lpn: 69,
+    cubic: 70
 };
 
 $root.wnn.PadMode = {
@@ -642,6 +643,15 @@ $root.wnn.Gather = class Gather {
     }
 };
 
+$root.wnn.ChannelShuffel = class ChannelShuffel {
+
+    static decode(reader, position) {
+        const $ = new $root.wnn.ChannelShuffel();
+        $.groups = reader.int32_(position, 4, 0);
+        return $;
+    }
+};
+
 $root.wnn.ExpandDims = class ExpandDims {
 
     static decode(reader, position) {
@@ -763,8 +773,9 @@ $root.wnn.OpParameter = class {
             case 27: return $root.wnn.Permute.decode(reader, position);
             case 28: return $root.wnn.Reshape.decode(reader, position);
             case 29: return $root.wnn.Split.decode(reader, position);
-            case 30: return $root.wnn.FilmLPN.decode(reader, position);
-            case 31: return $root.wnn.Cubic.decode(reader, position);
+            case 30: return $root.wnn.ChannelShuffel.decode(reader, position);
+            case 31: return $root.wnn.FilmLPN.decode(reader, position);
+            case 32: return $root.wnn.Cubic.decode(reader, position);
             default: return undefined;
         }
     }
@@ -800,6 +811,7 @@ $root.wnn.OpParameter = class {
             case 'Permute': return $root.wnn.Permute.decodeText(reader, json);
             case 'Reshape': return $root.wnn.Reshape.decodeText(reader, json);
             case 'Split': return $root.wnn.Split.decodeText(reader, json);
+            case 'ChannelShuffel': return $root.wnn.ChannelShuffel.decodeText(reader, json);
             case 'FilmLPN': return $root.wnn.FilmLPN.decodeText(reader, json);
             case 'Cubic': return $root.wnn.Cubic.decodeText(reader, json);
             default: return undefined;
