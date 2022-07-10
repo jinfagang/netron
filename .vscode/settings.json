@@ -5,5 +5,10 @@
         "third_party": true
     },
     "python.linting.pylintEnabled": true,
-    "python.linting.enabled": true
+    "python.linting.enabled": true,
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#302E22",
+        "titleBar.activeBackground": "#444030",
+        "titleBar.activeForeground": "#FBFBFA"
+    }
 }
