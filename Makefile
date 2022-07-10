@@ -31,6 +31,7 @@ update: install
 	@./tools/nnabla sync schema metadata
 	@./tools/onnx sync install schema metadata
 	@./tools/om schema
+	@./tools/rknn schema
 	@./tools/paddle sync schema
 	@./tools/pytorch sync install schema metadata
 	@./tools/sklearn sync install metadata
@@ -40,11 +41,18 @@ update: install
 	@./tools/wnnx sync schema
 
 build_python: install
-	python -m pip install --user wheel
-	python ./publish/setup.py build --version bdist_wheel
+	python -m pip install --user build wheel --quiet
+	rm -rf ./source/__pycache__
+	rm -rf ./dist/pypi
+	mkdir -p ./dist/pypi/netron
+	cp -R ./source/* ./dist/pypi/netron
+	cp ./publish/setup.py ./dist/pypi
+	rm ./dist/pypi/netron/electron.* ./dist/pypi/netron/app.js
+	python publish/version.py
+	python -m build --no-isolation --wheel --outdir ./dist/pypi dist/pypi
 
 install_python: build_python
-	pip install --force-reinstall --quiet dist/dist/*.whl
+	pip install --force-reinstall dist/pypi/*.whl
 
 build_electron: install
 	npx electron-builder --mac --universal --publish never -c.mac.identity=null
@@ -71,7 +79,7 @@ coverage:
 
 publish_python: build_python
 	python -m pip install --user twine
-	python -m twine upload --non-interactive --skip-existing --verbose dist/dist/*
+	python -m twine upload --non-interactive --skip-existing --verbose dist/pypi/*.whl
 
 publish_electron: install
 	npx electron-builder --mac --universal --publish always

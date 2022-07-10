@@ -2757,10 +2757,31 @@
     ]
   },
   {
-    "name": "torch.meshgrid",
+    "name": "torch.broadcast_to:",
+    "inputs": [
+      { "name": "self", "type": "Tensor" },
+      { "name": "size", "type": "int64[]" }
+    ],
+    "outputs": [
+      { "name": "output", "type": "Tensor" }
+    ]
+  },
+  {
+    "name": "torch.meshgrid:",
     "category": "Tensor",
     "inputs": [
       { "name": "tensors", "type": "Tensor[]" }
+    ],
+    "outputs": [
+      { "name": "output", "type": "Tensor[]" }
+    ]
+  },
+  {
+    "name": "torch.meshgrid:indexing",
+    "category": "Tensor",
+    "inputs": [
+      { "name": "tensors", "type": "Tensor[]" },
+      { "name": "indexing", "type": "string" }
     ],
     "outputs": [
       { "name": "output", "type": "Tensor[]" }
@@ -2809,6 +2830,19 @@
       { "name": "layout", "type": "Layout", "optional": true, "default": null },
       { "name": "device", "type": "Device", "optional": true, "default": null },
       { "name": "pin_memory", "type": "boolean", "optional": true, "default": null }
+    ],
+    "outputs": [
+      { "name": "output", "type": "Tensor" }
+    ]
+  },
+  {
+    "name": "torch.pairwise_distance:",
+    "inputs": [
+      { "name": "x1", "type": "Tensor" },
+      { "name": "x2", "type": "Tensor" },
+      { "name": "p", "type": "float32", "default": 2 },
+      { "name": "eps", "type": "float32", "default": 1e-06 },
+      { "name": "keepdim", "type": "boolean", "default": false }
     ],
     "outputs": [
       { "name": "output", "type": "Tensor" }
@@ -3356,6 +3390,40 @@
     "name": "torch.bitwise_not_",
     "inputs": [
       { "name": "self", "type": "Tensor" }
+    ],
+    "outputs": [
+      { "name": "output", "type": "Tensor" }
+    ]
+  },
+  {
+    "name": "torch.bucketize:Tensor",
+    "inputs": [
+      { "name": "self", "type": "Tensor" },
+      { "name": "boundaries", "type": "Tensor" },
+      { "name": "out_int32", "type": "boolean", "default": false },
+      { "name": "right", "type": "boolean", "default": false }
+    ],
+    "outputs": [
+      { "name": "output", "type": "Tensor" }
+    ]
+  },
+  {
+    "name": "torch.bucketize:Scalar",
+    "inputs": [
+      { "name": "self", "type": "Scalar" },
+      { "name": "boundaries", "type": "Tensor" },
+      { "name": "out_int32", "type": "boolean", "default": false },
+      { "name": "right", "type": "boolean", "default": false }
+    ],
+    "outputs": [
+      { "name": "output", "type": "Tensor" }
+    ]
+  },
+  {
+    "name": "torch.pinverse",
+    "inputs": [
+      { "name": "self", "type": "Scalar" },
+      { "name": "rcond", "type": "float32", "default": 1e-15 }
     ],
     "outputs": [
       { "name": "output", "type": "Tensor" }
@@ -5517,6 +5585,37 @@
     ]
   },
   {
+    "name": "torch.linalg_solve:",
+    "attributes": [
+      { "name": "input", "type": "Tensor" },
+      { "name": "other", "type": "Tensor" }
+    ],
+    "outputs": [
+      { "name": "output", "type": "Tensor" }
+    ]
+  },
+  {
+    "name": "torch.linalg_tensorinv:",
+    "attributes": [
+      { "name": "self", "type": "Tensor" },
+      { "name": "ind", "type": "int64", "default": 2 }
+    ],
+    "outputs": [
+      { "name": "output", "type": "Tensor" }
+    ]
+  },
+  {
+    "name": "torch.linalg_tensorsolve:",
+    "attributes": [
+      { "name": "self", "type": "Tensor" },
+      { "name": "other", "type": "Tensor" },
+      { "name": "dims", "type": "int64[]", "optional": true, "default": null }
+    ],
+    "outputs": [
+      { "name": "output", "type": "Tensor" }
+    ]
+  },
+  {
     "name": "torch.linspace",
     "attributes": [
       { "name": "start", "type": "Scalar" },
@@ -6816,6 +6915,20 @@
       { "name": "self", "type": "Tensor" },
       { "name": "other", "type": "Tensor" },
       { "name": "dim", "type": "int64", "optional": true, "default": null }
+    ],
+    "outputs": [
+      { "name": "output", "type": "Tensor" }
+    ]
+  },
+  {
+    "name": "torch.cross_entropy_loss",
+    "inputs": [
+      { "name": "self", "type": "Tensor" },
+      { "name": "target", "type": "Tensor" },
+      { "name": "weight", "type": "Tensor", "optional": true, "default": null },
+      { "name": "reduction", "type": "int64" },
+      { "name": "ignore_index", "type": "int64", "default": -100 },
+      { "name": "label_smoothing", "type": "float32", "default": 0 }
     ],
     "outputs": [
       { "name": "output", "type": "Tensor" }

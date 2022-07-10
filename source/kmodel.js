@@ -520,7 +520,13 @@ kmodel.Reader = class {
                         layer.scale = reader.float32();
                         layer.bias = reader.float32();
                     });
-                    register(   13, 'REQUANTIZE');
+                    register(   13, 'REQUANTIZE', '', (layer, reader) => {
+                        layer.flags = reader.uint32();
+                        layer.inputs = [ reader.parameter('input') ];
+                        layer.outputs = [ reader.parameter('output') ];
+                        layer.count = reader.uint32();
+                        layer.table = reader.read(256);
+                    });
                     register(   14, 'L2_NORMALIZATION', 'Normalization');
                     register(   15, 'SOFTMAX', 'Activation', (layer, reader) => {
                         layer.flags = reader.uint32();
@@ -587,6 +593,24 @@ kmodel.Reader = class {
                         const shape = [ reader.uint32(), reader.uint32(), reader.uint32() ];
                         layer.inputs[0].arguments[0].shape = shape;
                         layer.outputs[0].arguments[0].shape = shape;
+                    });
+                    register(   22, 'RESIZE_NEAREST_NEIGHBOR', '', (layer, reader) => {
+                        layer.flags = reader.uint32();
+                        layer.inputs = [ reader.parameter('input') ];
+                        layer.outputs = [ reader.parameter('output') ];
+                        layer.inputs[0].arguments[0].shape = [ reader.uint32(), reader.uint32(), reader.uint32() ];
+                        layer.out_width = reader.uint32();
+                        layer.out_height = reader.uint32();
+                        layer.align_corners = reader.uint32();
+                    });
+                    register(   23, 'QUANTIZED_RESIZE_NEAREST_NEIGHBOR', '', (layer, reader) => {
+                        layer.flags = reader.uint32();
+                        layer.inputs = [ reader.parameter('input') ];
+                        layer.outputs = [ reader.parameter('output') ];
+                        layer.inputs[0].arguments[0].shape = [ reader.uint32(), reader.uint32(), reader.uint32() ];
+                        layer.out_width = reader.uint32();
+                        layer.out_height = reader.uint32();
+                        layer.align_corners = reader.uint32();
                     });
                     register( 1000, 'CONV', 'Layer');
                     register( 1001, 'DWCONV', 'Layer');
@@ -798,6 +822,10 @@ kmodel.Reader = class {
                         const value = reader.uint32();
                         return [ 'mean', 'min', 'max', 'sum' ][value];
                     };
+                    reader.image_resize_mode_t = function() {
+                        const value = reader.uint32();
+                        return [ 'bilinear', 'nearest_neighbor' ][value];
+                    };
                     const inputs = new Array(model_header.inputs);
                     for (let i = 0; i < inputs.length; i++) {
                         inputs[i] = reader.parameter('input' + (i == 0 ? '' : (i + 1).toString()));
@@ -916,7 +944,16 @@ kmodel.Reader = class {
                         layer.inputs = [ reader.parameter('input') ];
                         layer.outputs = [ reader.parameter('output') ];
                     });
-                    register(  0x0A, 'resize_image', '');
+                    register(  0x0A, 'resize_image', '', (layer, reader) => {
+                        layer.inputs = [ reader.parameter('input') ];
+                        layer.outputs = [ reader.parameter('output') ];
+                        layer.reduce_op = reader.reduce_op_t();
+                        layer.inputs[0].arguments[0].shape = reader.runtime_shape_t();
+                        layer.out_h = reader.int32();
+                        layer.out_w = reader.int32();
+                        layer.mode = reader.image_resize_mode_t();
+                        layer.align_corners = reader.boolean();
+                    });
                     register(  0x0B, 'softmax', 'Activation');
                     register(  0x0C, 'transpose', 'Transform', (layer, reader) => {
                         layer.inputs = [ reader.parameter('input') ];

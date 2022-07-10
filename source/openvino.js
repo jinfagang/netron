@@ -44,7 +44,7 @@ openvino.ModelFactory = class {
 
     open(context, match) {
         const open = (stream, bin) => {
-            return openvino.Metadata.open(context).then((metadata) => {
+            return context.metadata('openvino-metadata.json').then((metadata) => {
                 let document = null;
                 try {
                     const reader = xml.TextReader.open(stream);
@@ -826,6 +826,7 @@ openvino.Tensor = class {
         switch(this._type.dataType) {
             case 'float16':
             case 'float32':
+            case 'float64':
             case 'int8':
             case 'int16':
             case 'int32':
@@ -860,14 +861,19 @@ openvino.Tensor = class {
                     return results;
                 }
                 switch (this._type.dataType) {
+                    case 'float16':
+                        results.push(context.data.getFloat16(context.index, true));
+                        context.index += 2;
+                        context.count++;
+                        break;
                     case 'float32':
                         results.push(context.data.getFloat32(context.index, true));
                         context.index += 4;
                         context.count++;
                         break;
-                    case 'float16':
-                        results.push(context.data.getFloat16(context.index, true));
-                        context.index += 2;
+                    case 'float64':
+                        results.push(context.data.getFloat64(context.index, true));
+                        context.index += 4;
                         context.count++;
                         break;
                     case 'int8':
@@ -966,6 +972,7 @@ openvino.TensorType = class {
             case 'fp16':    this._dataType = 'float16'; break;
             case 'f32':     this._dataType = 'float32'; break;
             case 'fp32':    this._dataType = 'float32'; break;
+            case 'fp64':    this._dataType = 'float64'; break;
             case 'bf16':    this._dataType = 'bfloat16'; break;
             case 'i4':      this._dataType = 'int4'; break;
             case 'i8':      this._dataType = 'int8'; break;
@@ -1019,49 +1026,6 @@ openvino.TensorShape = class {
             return '';
         }
         return '[' + this._dimensions.join(',') + ']';
-    }
-};
-
-openvino.Metadata = class {
-
-    static open(context) {
-        if (openvino.Metadata._metadata) {
-            return Promise.resolve(openvino.Metadata._metadata);
-        }
-        return context.request('openvino-metadata.json', 'utf-8', null).then((data) => {
-            openvino.Metadata._metadata = new openvino.Metadata(data);
-            return openvino.Metadata._metadata;
-        }).catch(() => {
-            openvino.Metadata._metadata = new openvino.Metadata(null);
-            return openvino.Metadata._metadata;
-        });
-    }
-
-    constructor(data) {
-        this._map = new Map();
-        this._attributeMap = new Map();
-        if (data) {
-            const metadata = JSON.parse(data);
-            this._map = new Map(metadata.map((item) => [ item.name, item ]));
-        }
-    }
-
-    type(name) {
-        return this._map.get(name);
-    }
-
-    attribute(type, name) {
-        const key = type + ':' + name;
-        if (!this._attributeMap.has(key)) {
-            this._attributeMap.set(key, null);
-            const schema = this.type(type);
-            if (schema && schema.attributes) {
-                for (const attribute of schema.attributes) {
-                    this._attributeMap.set(type + ':' + attribute.name, attribute);
-                }
-            }
-        }
-        return this._attributeMap.get(key);
     }
 };
 

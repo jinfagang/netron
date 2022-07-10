@@ -76,7 +76,7 @@ tflite.ModelFactory = class {
                     throw new tflite.Error("Unsupported TensorFlow Lite format '" + match + "'.");
                 }
             }
-            return tflite.Metadata.open(context).then((metadata) => {
+            return context.metadata('tflite-metadata.json').then((metadata) => {
                 return new tflite.Model(metadata, model);
             });
         });
@@ -90,6 +90,7 @@ tflite.Model = class {
         this._format = 'TensorFlow Lite';
         this._format = this._format + ' v' + model.version.toString();
         this._description = model.description || '';
+        this._metadata = [];
         const builtinOperators = new Map();
         const upperCase = new Set([ '2D', 'LSH', 'SVDF', 'RNN', 'L2', 'LSTM' ]);
         for (const key of Object.keys(tflite.schema.BuiltinOperator)) {
@@ -120,11 +121,21 @@ tflite.Model = class {
                         const reader = flatbuffers.BinaryReader.open(data);
                         if (tflite.schema.ModelMetadata.identifier(reader)) {
                             modelMetadata = tflite.schema.ModelMetadata.create(reader);
-                            this._name = modelMetadata.name || '';
-                            this._version = modelMetadata.version || '';
-                            this._description = modelMetadata.description ? [ this.description, modelMetadata.description].join(' ') : this._description;
-                            this._author = modelMetadata.author || '';
-                            this._license = modelMetadata.license || '';
+                            if (modelMetadata.name) {
+                                this._name = modelMetadata.name;
+                            }
+                            if (modelMetadata.version) {
+                                this._version = modelMetadata.version;
+                            }
+                            if (modelMetadata.description) {
+                                this._description = this._description ? [ this._description, modelMetadata.description].join(' ') : modelMetadata.description;
+                            }
+                            if (modelMetadata.author) {
+                                this._metadata.push({ name: 'author', value: modelMetadata.author });
+                            }
+                            if (modelMetadata.license) {
+                                this._metadata.push({ name: 'license', value: modelMetadata.license });
+                            }
                         }
                         break;
                     }
@@ -164,12 +175,8 @@ tflite.Model = class {
         return this._description;
     }
 
-    get author() {
-        return this._author;
-    }
-
-    get license() {
-        return this._license;
+    get metadata() {
+        return this._metadata;
     }
 
     get graphs() {
@@ -791,52 +798,6 @@ tflite.TensorShape = class {
             return '';
         }
         return '[' + this._dimensions.map((dimension) => dimension.toString()).join(',') + ']';
-    }
-};
-
-tflite.Metadata = class {
-
-    static open(context) {
-        if (tflite.Metadata._metadata) {
-            return Promise.resolve(tflite.Metadata._metadata);
-        }
-        return context.request('tflite-metadata.json', 'utf-8', null).then((data) => {
-            tflite.Metadata._metadata = new tflite.Metadata(data);
-            return tflite.Metadata._metadata;
-        }).catch(() => {
-            tflite.Metadata._metadata = new tflite.Metadata(null);
-            return tflite.Metadata._metadata;
-        });
-    }
-
-    constructor(data) {
-        this._types = new Map();
-        this._attributes = new Map();
-        if (data) {
-            const metadata = JSON.parse(data);
-            this._types = new Map(metadata.map((item) => [ item.name, item ]));
-        }
-    }
-
-    type(name) {
-        if (!this._types.has(name)) {
-            this._types.set(name, { name: name });
-        }
-        return this._types.get(name);
-    }
-
-    attribute(type, name) {
-        const key = type + ':' + name;
-        if (!this._attributes.has(key)) {
-            this._attributes.set(key, null);
-            const metadata = this.type(type);
-            if (metadata && Array.isArray(metadata.attributes)) {
-                for (const attribute of metadata.attributes) {
-                    this._attributes.set(type + ':' + attribute.name, attribute);
-                }
-            }
-        }
-        return this._attributes.get(key);
     }
 };
 

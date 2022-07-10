@@ -27,7 +27,7 @@ mxnet.ModelFactory = class {
     }
 
     open(context, match) {
-        return mxnet.Metadata.open(context).then((metadata) => {
+        return context.metadata('mxnet-metadata.json').then((metadata) => {
             const basename = (base, identifier, extension, suffix, append) => {
                 if (!base) {
                     if (identifier.toLowerCase().endsWith(extension)) {
@@ -258,8 +258,13 @@ mxnet.Model = class {
         this._version = manifest.version;
         this._description = manifest.description || '';
         this._runtime = manifest.runtime || '';
-        this._author = manifest.author || '';
-        this._license = manifest.license || '';
+        this._metadata = [];
+        if (manifest.author) {
+            this._metadata.push({ name: 'author', value: manifest.author });
+        }
+        if (manifest.license) {
+            this._metadata.push({ name: 'license', value: manifest.license });
+        }
         this._graphs = [ new mxnet.Graph(metadata, manifest, symbol, params) ];
     }
 
@@ -269,6 +274,10 @@ mxnet.Model = class {
 
     get producer() {
         return this._producer;
+    }
+
+    get runtime() {
+        return this._runtime;
     }
 
     get name() {
@@ -283,16 +292,8 @@ mxnet.Model = class {
         return this._description;
     }
 
-    get author() {
-        return this._author;
-    }
-
-    get license() {
-        return this._license;
-    }
-
-    get runtime() {
-        return this._runtime;
+    get metadata() {
+        return this._metadata;
     }
 
     get graphs() {
@@ -968,28 +969,7 @@ mxnet.ndarray = class {
     static load(buffer) {
         // NDArray::Load(dmlc::Stream* fi, std::vector<NDArray>* data, std::vector<std::string>* keys)
         const map = new Map();
-        const reader = new base.BinaryReader(buffer);
-        reader.uint64 = function() {
-            const value = this.uint32();
-            if (this.uint32() != 0) {
-                throw new mxnet.Error('Large uint64 value.');
-            }
-            return value;
-        };
-        reader.uint32s = function() {
-            const array = new Array(this.uint32());
-            for (let i = 0; i < array.length; i++) {
-                array[i] = this.uint32();
-            }
-            return array;
-        };
-        reader.uint64s = function() {
-            const array = new Array(this.uint32());
-            for (let i = 0; i < array.length; i++) {
-                array[i] = this.uint64();
-            }
-            return array;
-        };
+        const reader = new mxnet.BinaryReader(buffer);
         if (reader.uint64() !== 0x112) { // kMXAPINDArrayListMagic
             throw new mxnet.Error('Invalid signature.');
         }
@@ -1078,6 +1058,27 @@ mxnet.ndarray.NDArray = class {
     }
 };
 
+mxnet.BinaryReader = class extends base.BinaryReader {
+
+    uint32s() {
+        const count = this.uint32();
+        const array = new Array(count);
+        for (let i = 0; i < array.length; i++) {
+            array[i] = this.uint32();
+        }
+        return array;
+    }
+
+    uint64s() {
+        const count = this.uint32();
+        const array = new Array(count);
+        for (let i = 0; i < array.length; i++) {
+            array[i] = this.uint64();
+        }
+        return array;
+    }
+};
+
 mxnet.context = {};
 
 mxnet.context.Context = class {
@@ -1085,50 +1086,6 @@ mxnet.context.Context = class {
     constructor(reader) {
         this._deviceType = reader.uint32();
         this._deviceId = reader.uint32();
-    }
-};
-
-mxnet.Metadata = class {
-
-    static open(context) {
-        if (mxnet.Metadata._metadata) {
-            return Promise.resolve(mxnet.Metadata._metadata);
-        }
-        return context.request('mxnet-metadata.json', 'utf-8', null).then((data) => {
-            mxnet.Metadata._metadata = new mxnet.Metadata(data);
-            return mxnet.Metadata._metadata;
-        }).catch(() => {
-            mxnet.Metadata._metadata = new mxnet.Metadata(null);
-            return mxnet.Metadata._metadata;
-        });
-    }
-
-    constructor(data) {
-        this._map = new Map();
-        this._attributeCache = {};
-        if (data) {
-            const metadata = JSON.parse(data);
-            this._map = new Map(metadata.map((item) => [ item.name, item ]));
-        }
-    }
-
-    type(name) {
-        return this._map.get(name);
-    }
-
-    attribute(type, name) {
-        let map = this._attributeCache[type];
-        if (!map) {
-            map = {};
-            const schema = this.type(type);
-            if (schema && schema.attributes) {
-                for (const attribute of schema.attributes) {
-                    map[attribute.name] = attribute;
-                }
-            }
-            this._attributeCache[type] = map;
-        }
-        return map[name] || null;
     }
 };
 

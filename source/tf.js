@@ -208,7 +208,8 @@ tf.ModelFactory = class {
                 stream.seek(-8);
                 const buffer = stream.read(8);
                 stream.seek(0);
-                const offset = new base.BinaryReader(buffer).uint64();
+                const reader = new base.BinaryReader(buffer);
+                const offset = reader.uint64();
                 if (offset < stream.length) {
                     return 'tf.pb.mmap';
                 }
@@ -221,7 +222,7 @@ tf.ModelFactory = class {
         return context.require('./tf-proto').then(() => {
             tf.proto = protobuf.get('tf');
             const openModel = (saved_model, format, producer, bundle) => {
-                return tf.Metadata.open(context).then((metadata) => {
+                return context.metadata('tf-metadata.json').then((metadata) => {
                     return new tf.Model(metadata, saved_model, format, producer, bundle);
                 });
             };
@@ -1091,6 +1092,10 @@ tf.Attribute = class {
             this._type = schema.type;
         }
         switch (value.value) {
+            case undefined:
+                this._type = '';
+                this._value = null;
+                break;
             case 'type':
                 this._type = 'type';
                 this._value = tf.Utility.dataType(value.type);
@@ -2099,34 +2104,6 @@ tf.GraphMetadata = class {
             this._visibleCache.set(type, set);
         }
         return !this._visibleCache.get(type).has(name);
-    }
-};
-
-tf.Metadata = class {
-
-    static open(context) {
-        if (tf.Metadata._metadata) {
-            return Promise.resolve(tf.Metadata._metadata);
-        }
-        return context.request('tf-metadata.json', 'utf-8', null).then((data) => {
-            tf.Metadata._metadata = new tf.Metadata(data);
-            return tf.Metadata._metadata;
-        }).catch(() => {
-            tf.Metadata._metadata = new tf.Metadata(null);
-            return tf.Metadata._metadata;
-        });
-    }
-
-    constructor(data) {
-        this._map = new Map();
-        if (data) {
-            const metadata = JSON.parse(data);
-            this._map = new Map(metadata.map((item) => [ item.name, item ]));
-        }
-    }
-
-    type(operator) {
-        return this._map.get(operator);
     }
 };
 
