@@ -81,8 +81,9 @@ wnn.Graph = class {
         }
         const inputs = new Map();
         for (const op of net.oplists) {
-            for (const input of op.input_indexes) {
+            for (const input of op.input_names) {
                 inputs.set(input, (inputs.get(input) || 0) + 1);
+                // inputs.set(input, (inputs.get(input) || 0));
             }
         }
         const consts = new Map();
@@ -100,11 +101,12 @@ wnn.Graph = class {
         const args = new Map();
         const arg = (index) => {
             if (!args.has(index)) {
-                if (index > net.tensor_names.length) {
-                    index = 0
-                    console.log('WARN! index out of net.tensor_names!!', index, net.tensor_names.length)
-                }
-                const name = net.tensor_names[index];
+                // if (index > net.tensor_names.length) {
+                //     index = 0
+                //     console.log('WARN! index out of net.tensor_names!!', index, net.tensor_names.length)
+                // }
+                // const name = net.tensor_names[index];
+                const name = index.toString();
                 const op = consts.get(index);
                 if (op) {
                     const tensor = op ? wnn.Utility.createTensor(op.param, 'Const') : null;
@@ -120,6 +122,13 @@ wnn.Graph = class {
                 }
             }
             return args.get(index);
+            // if (!args.has(name)) {
+            //     const extraTensorDescribe = net.extra_tensor_describe[name];
+            //     const blob = extraTensorDescribe ? extraTensorDescribe.blob : null;
+            //     const type = blob && blob.dims && blob.dims.length > 0 ? new wnn.TensorType(blob.dtype, new wnn.TensorShape(blob.dims), blob.data_format) : null;
+            //     args.set(name, new wnn.Argument(name, type, null));
+            // }
+            // return args.get(name);
         };
 
         for (const op of oplists) {
@@ -130,6 +139,13 @@ wnn.Graph = class {
                 const args = Array.from(op.input_indexes).map((index) => arg(index));
                 this._outputs.push(new wnn.Parameter(op.name, true, args));
             }
+            // if (op.type === wnn.schema.OpType.input) {
+            //     const args = Array.from(op.output_names).map((name) => arg(name));
+            //     this._inputs.push(new wnn.Parameter(op.name, true, args));
+            // } else if (op.type === wnn.schema.OpType.output) {
+            //     const args = Array.from(op.input_names).map((name) => arg(name));
+            //     this._outputs.push(new wnn.Parameter(op.name, true, args));
+            // } 
             else {
                 this._nodes.push(new wnn.Node(metadata, op, net, arg));
             }
@@ -168,16 +184,21 @@ wnn.Node = class {
     constructor(metadata, op, net, arg) {
         const type = wnn.Utility.enum('OpType', op.type) || '(' + op.type.toString() + ')';
         this._type = metadata.type(type) || { name: type };
-        this._name = op.name || '';
+        this._name = op.name || 'noname';
         this._attributes = [];
         this._inputs = [];
         this._outputs = [];
         this._chains = [];
+        console.log(op.name);
         if (op.input_indexes && op.input_indexes.length > 0) {
             this._inputs.push(new wnn.Parameter('input', true, Array.from(op.input_indexes).map((index) => arg(index))));
+            // this._inputs.push(new wnn.Parameter('input', true, Array.from(op.input_names).map((name) => arg(name))));
+            console.log(arg(op.input_names[0]));
         }
         if (op.output_indexes && op.output_indexes.length > 0) {
             this._outputs.push(new wnn.Parameter('output', true, Array.from(op.output_indexes).map((index) => arg(index))));
+            // this._outputs.push(new wnn.Parameter('output', true, Array.from(op.output_names).map((name) => arg(name))));
+            console.log(arg(op.output_names[0]));
         }
         const param = op.param;
         if (param) {
