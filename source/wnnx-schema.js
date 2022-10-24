@@ -159,62 +159,78 @@ $root.wnn.OpType = {
     mish: 18,
     hardswish: 19,
     hardsigmoid: 20,
-    sigmoid: 21,
-    fc: 22,
-    flatten: 23,
-    matmul: 24,
-    fc_share: 25,
-    lstm: 26,
-    onehot: 27,
-    transpose: 28,
-    gather: 29,
-    split: 30,
-    concat: 31,
-    activation: 32,
-    binary_op: 33,
-    fill: 34,
-    pad: 35,
-    reshape: 36,
-    instancenorm: 37,
-    conv_depthwise: 38,
-    quantized_avgpool: 39,
-    quantized_concat: 40,
-    quantized_matmul: 41,
-    quantized_relu: 42,
-    quantized_relu6: 43,
-    quantized_softmax: 44,
-    roipooling: 45,
-    roialign: 46,
-    unary: 47,
-    unary_square: 48,
-    unary_sqrt: 49,
-    binary: 50,
-    binary_add: 51,
-    binary_mul: 52,
-    binary_div: 53,
-    binary_sub: 54,
-    softmax: 55,
-    scatternd: 56,
-    gathernd: 57,
-    nms: 58,
-    input: 59,
-    output: 60,
-    extra: 61,
-    eltwise: 62,
-    reduction: 63,
-    expand_dims: 64,
-    normalize: 65,
-    permute: 66,
-    channelshuffel: 67,
-    unsupported: 68,
-    film_lpn: 69,
-    cubic: 70
+    hardtanh: 21,
+    selu: 22,
+    celu: 23,
+    gelu: 24,
+    softplus: 25,
+    softshrink: 26,
+    sigmoid: 27,
+    glu: 28,
+    fc: 29,
+    flatten: 30,
+    matmul: 31,
+    fc_share: 32,
+    lstm: 33,
+    onehot: 34,
+    gather: 35,
+    split: 36,
+    concat: 37,
+    activation: 38,
+    binary_op: 39,
+    fill: 40,
+    pad: 41,
+    reshape: 42,
+    instancenorm: 43,
+    conv_depthwise: 44,
+    quantized_avgpool: 45,
+    quantized_concat: 46,
+    quantized_matmul: 47,
+    quantized_relu: 48,
+    quantized_relu6: 49,
+    quantized_softmax: 50,
+    roipooling: 51,
+    roialign: 52,
+    unary: 53,
+    unary_square: 54,
+    unary_sqrt: 55,
+    binary: 56,
+    binary_add: 57,
+    binary_mul: 58,
+    binary_div: 59,
+    binary_sub: 60,
+    softmax: 61,
+    scatternd: 62,
+    gathernd: 63,
+    nms: 64,
+    input: 65,
+    output: 66,
+    extra: 67,
+    eltwise: 68,
+    reduction: 69,
+    expand_dims: 70,
+    normalize: 71,
+    permute: 72,
+    channelshuffle: 73,
+    interpolate: 74,
+    einsum: 75,
+    squeeze: 76,
+    unsqueeze: 77,
+    attribute: 78,
+    unsupported: 79,
+    film_lpn: 80,
+    cubic: 81,
+    multiheadattention: 82,
+    cast: 83,
+    cip: 84,
+    repeat: 85
 };
 
 $root.wnn.PadMode = {
     CAFFE: 0,
     VALID: 1,
-    SAME: 2
+    SAME: 2,
+    CONSTANT: 3
 };
 
 $root.wnn.Conv2DCommon = class Conv2DCommon {
@@ -454,6 +470,7 @@ $root.wnn.ArgMax = class ArgMax {
         $.top_k = reader.int32_(position, 6, 0);
         $.axis = reader.int32_(position, 8, 0);
         $.softmax_thresh = reader.int32_(position, 10, 0);
+        $.keep_dim = reader.bool_(position, 12, false);
         return $;
     }
 };
@@ -643,10 +660,10 @@ $root.wnn.Gather = class Gather {
     }
 };
 
-$root.wnn.ChannelShuffel = class ChannelShuffel {
+$root.wnn.ChannelShuffle = class ChannelShuffle {
 
     static decode(reader, position) {
-        const $ = new $root.wnn.ChannelShuffel();
+        const $ = new $root.wnn.ChannelShuffle();
         $.groups = reader.int32_(position, 4, 0);
         return $;
     }
@@ -669,6 +686,74 @@ $root.wnn.Flatten = class Flatten {
         const $ = new $root.wnn.Flatten();
         $.start_dim = reader.int32_(position, 4, 0);
         $.end_dim = reader.int32_(position, 6, 0);
+        return $;
+    }
+};
+
+$root.wnn.Concat = class Concat {
+
+    static decode(reader, position) {
+        const $ = new $root.wnn.Concat();
+        $.dim = reader.int32_(position, 4, 0);
+        return $;
+    }
+};
+
+$root.wnn.InterpolateMode = {
+    LINEAR: 0,
+    NEARST: 1,
+    BILINEAR: 2,
+    CUBIC: 3,
+    BICUBIC: 4
+};
+
+$root.wnn.Interpolate = class Interpolate {
+
+    static decode(reader, position) {
+        const $ = new $root.wnn.Interpolate();
+        $.mode = reader.int8_(position, 4, 0);
+        $.scale_factor = reader.typedArray(position, 6, Float32Array);
+        $.size = reader.typedArray(position, 8, Int32Array);
+        $.coeff = reader.float32_(position, 10, 0);
+        return $;
+    }
+};
+
+$root.wnn.Einsum = class Einsum {
+
+    static decode(reader, position) {
+        const $ = new $root.wnn.Einsum();
+        $.equation = reader.string_(position, 4, null);
+        return $;
+    }
+};
+
+$root.wnn.Cast = class Cast {
+
+    static decode(reader, position) {
+        const $ = new $root.wnn.Cast();
+        $.from = reader.int32_(position, 4, 0);
+        $.to = reader.int32_(position, 6, 0);
+        return $;
+    }
+};
+
+$root.wnn.Pad = class Pad {
+
+    static decode(reader, position) {
+        const $ = new $root.wnn.Pad();
+        $.padding = reader.typedArray(position, 4, Int32Array);
+        $.mode = reader.int8_(position, 6, 0);
+        $.value = reader.float32_(position, 8, 0);
+        return $;
+    }
+};
+
+$root.wnn.Repeat = class Repeat {
+
+    static decode(reader, position) {
+        const $ = new $root.wnn.Repeat();
+        $.shape = reader.typedArray(position, 4, Int32Array);
         return $;
     }
 };
@@ -711,7 +796,7 @@ $root.wnn.FilmLPN = class FilmLPN {
         $.weights = reader.typedArray(position, 12, Float32Array);
         $.bias = reader.typedArray(position, 14, Float32Array);
         $.bias_size = reader.int32_(position, 16, 0);
-        $.quant_param = reader.table(position, 18, $root.wnn.Quant.decode);
+        $.quant_param = reader.tableArray(position, 18, $root.wnn.Quant.decode);
         return $;
     }
 };
@@ -729,6 +814,31 @@ $root.wnn.Cubic = class Cubic {
         $.bias = reader.typedArray(position, 16, Float32Array);
         $.bias_size = reader.int32_(position, 18, 0);
         $.quant_param = reader.table(position, 20, $root.wnn.Quant.decode);
+        return $;
+    }
+};
+
+$root.wnn.MultiHeadAttention = class MultiHeadAttention {
+
+    static decode(reader, position) {
+        const $ = new $root.wnn.MultiHeadAttention();
+        $.embed_dim = reader.int32_(position, 4, 0);
+        $.num_heads = reader.int32_(position, 6, 0);
+        $.bias = reader.bool_(position, 8, true);
+        $.kdim = reader.int32_(position, 10, 0);
+        $.vdim = reader.int32_(position, 12, 0);
+        $.batch_first = reader.bool_(position, 14, false);
+        $.relative_pos = reader.bool_(position, 16, false);
+        $.q_weights = reader.typedArray(position, 18, Float32Array);
+        $.q_bias = reader.typedArray(position, 20, Float32Array);
+        $.k_weights = reader.typedArray(position, 22, Float32Array);
+        $.k_bias = reader.typedArray(position, 24, Float32Array);
+        $.v_weights = reader.typedArray(position, 26, Float32Array);
+        $.v_bias = reader.typedArray(position, 28, Float32Array);
+        $.out_weights = reader.typedArray(position, 30, Float32Array);
+        $.out_bias = reader.typedArray(position, 32, Float32Array);
+        $.in_weights = reader.typedArray(position, 34, Float32Array);
+        $.in_bias = reader.typedArray(position, 36, Float32Array);
         return $;
     }
 };
@@ -773,9 +883,17 @@ $root.wnn.OpParameter = class {
             case 27: return $root.wnn.Permute.decode(reader, position);
             case 28: return $root.wnn.Reshape.decode(reader, position);
             case 29: return $root.wnn.Split.decode(reader, position);
-            case 30: return $root.wnn.ChannelShuffel.decode(reader, position);
-            case 31: return $root.wnn.FilmLPN.decode(reader, position);
-            case 32: return $root.wnn.Cubic.decode(reader, position);
+            case 30: return $root.wnn.ChannelShuffle.decode(reader, position);
+            case 31: return $root.wnn.Concat.decode(reader, position);
+            case 32: return $root.wnn.Interpolate.decode(reader, position);
+            case 33: return $root.wnn.Einsum.decode(reader, position);
+            case 34: return $root.wnn.Attribute.decode(reader, position);
+            case 35: return $root.wnn.FilmLPN.decode(reader, position);
+            case 36: return $root.wnn.Cubic.decode(reader, position);
+            case 37: return $root.wnn.MultiHeadAttention.decode(reader, position);
+            case 38: return $root.wnn.Cast.decode(reader, position);
+            case 39: return $root.wnn.Pad.decode(reader, position);
+            case 40: return $root.wnn.Repeat.decode(reader, position);
             default: return undefined;
         }
     }
@@ -811,9 +929,17 @@ $root.wnn.OpParameter = class {
             case 'Permute': return $root.wnn.Permute.decodeText(reader, json);
             case 'Reshape': return $root.wnn.Reshape.decodeText(reader, json);
             case 'Split': return $root.wnn.Split.decodeText(reader, json);
-            case 'ChannelShuffel': return $root.wnn.ChannelShuffel.decodeText(reader, json);
+            case 'ChannelShuffle': return $root.wnn.ChannelShuffle.decodeText(reader, json);
+            case 'Concat': return $root.wnn.Concat.decodeText(reader, json);
+            case 'Interpolate': return $root.wnn.Interpolate.decodeText(reader, json);
+            case 'Einsum': return $root.wnn.Einsum.decodeText(reader, json);
+            case 'Attribute': return $root.wnn.Attribute.decodeText(reader, json);
             case 'FilmLPN': return $root.wnn.FilmLPN.decodeText(reader, json);
             case 'Cubic': return $root.wnn.Cubic.decodeText(reader, json);
+            case 'MultiHeadAttention': return $root.wnn.MultiHeadAttention.decodeText(reader, json);
+            case 'Cast': return $root.wnn.Cast.decodeText(reader, json);
+            case 'Pad': return $root.wnn.Pad.decodeText(reader, json);
+            case 'Repeat': return $root.wnn.Repeat.decodeText(reader, json);
             default: return undefined;
         }
     }
