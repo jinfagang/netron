@@ -230,7 +230,9 @@ $root.wnn.PadMode = {
     CAFFE: 0,
     VALID: 1,
     SAME: 2,
-    CONSTANT: 3
+    CONSTANT: 3,
+    RELFECT: 4,
+    REPLICATE: 5
 };
 
 $root.wnn.Conv2DCommon = class Conv2DCommon {
@@ -513,6 +515,7 @@ $root.wnn.Binary = class Binary {
         const $ = new $root.wnn.Binary();
         $.operation_type = reader.int8_(position, 4, 0);
         $.dtype = reader.int32_(position, 6, 1);
+        $.param_value0 = reader.float32_(position, 8, 0);
         return $;
     }
 };
